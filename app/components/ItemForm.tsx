@@ -65,7 +65,7 @@ const ItemForm: React.FC<Props> = ({
       setSubmitting(true);
       setError(null);
       await onSubmit(title, description);
-    } catch (err) {
+    } catch  {
       setError('Failed to save item. Please try again.');
     } finally {
       setSubmitting(false);

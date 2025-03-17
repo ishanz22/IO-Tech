@@ -9,6 +9,13 @@ export interface Item {
   description: string;
 }
 
+// Define the Post interface
+interface Post {
+  id: number;
+  title: string;
+  body: string;
+}
+
 // Function to generate a unique ID (using timestamp-based logic)
 let lastId = Date.now();
 const generateUniqueId = () => {
@@ -17,7 +24,7 @@ const generateUniqueId = () => {
 };
 
 // Function to convert API response into our Item format
-const transformResponseToItem = (post: any): Item => ({
+const transformResponseToItem = (post: Post): Item => ({
   id: post.id,
   title: post.title || "",
   description: post.body || "", // JSONPlaceholder uses 'body' instead of 'description'
@@ -28,7 +35,7 @@ export const fetchItems = async (): Promise<Item[]> => {
   try {
     const response = await axios.get(`${API_URL}/posts`);
     return response.data.slice(0, 10).map(transformResponseToItem);
-  } catch (error) {
+  } catch {
     // console.error("Failed to fetch items:", error);
     toast.error("Server-side error occurred. Please try again later.");
     return [];
@@ -90,9 +97,8 @@ export const deleteItem = async (id: number): Promise<void> => {
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
     toast.success("Item deleted successfully!");
-  } catch (error) {
+  } catch {
     // console.error("Failed to delete item:", error);
     toast.error("Server-side error occurred. Please try again later.");
   }
 };
-

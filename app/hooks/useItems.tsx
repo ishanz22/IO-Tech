@@ -22,7 +22,7 @@ export const useItems = () => {
       const data = await fetchItems();
       setItems(data);
       setFilteredItems(data);
-    } catch (err) {
+    } catch  {
       setError("Failed to load items. Please try again later.");
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ export const useItems = () => {
       const newItem = await createItem({ title, description });
       setItems([newItem, ...items]);
       closeModal();
-    } catch (err) {
+    } catch {
       setError("Failed to add item. Please try again.");
     }
   };
@@ -68,7 +68,7 @@ export const useItems = () => {
       const updatedItem = await updateItem({ ...editItem, title, description });
       setItems(items.map((item) => (item.id === editItem.id ? updatedItem : item)));
       closeModal();
-    } catch (err) {
+    } catch  {
       setError("Failed to update item. Please try again.");
     }
   };
@@ -77,7 +77,7 @@ export const useItems = () => {
     try {
       await deleteItem(id);
       setItems(items.filter((item) => item.id !== id));
-    } catch (err) {
+    } catch  {
       setError("Failed to delete item. Please try again.");
     }
   };
