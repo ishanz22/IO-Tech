@@ -1,126 +1,72 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { Item, createItem, updateItem, fetchItems, deleteItem } from './services/api';
-import ItemList from './components/ItemList';
-import ItemForm from './components/ItemForm';
-import Modal from './components/Modal';
+"use client";
+import React from "react";
+import { useItems } from "./hooks/useItems";
+import ItemList from "./components/ItemList";
+import ItemForm from "./components/ItemForm";
+import Modal from "./components/Modal";
+import SearchBox from "./components/SearchBox";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import ErrorAlert from "./components/ErrorAlert";
+import EmptyState from "./components/EmptyState";
 
 const App: React.FC = () => {
-  const [items, setItems] = useState<Item[]>([]);
-  const [editItem, setEditItem] = useState<Item | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  
-  const loadItems = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await fetchItems();
-      setItems(data);
-    } catch (err) {
-      setError('Failed to load items. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  useEffect(() => {
-    loadItems();
-  }, []);
-  
-  const handleAddItem = async (title: string, description: string) => {
-    try {
-      const newItem = await createItem({ title, description });
-      // Add new item to the top of the list
-      setItems(prevItems => [newItem, ...prevItems]);
-      closeModal();
-    } catch (err) {
-      setError('Failed to add item. Please try again.');
-    }
-  };
-  
-  const handleUpdateItem = async (title: string, description: string) => {
-    if (editItem) {
-      try {
-        const updatedItem = await updateItem({ ...editItem, title, description });
-        setItems(prevItems =>
-          prevItems.map(item => item.id === editItem.id ? updatedItem : item)
-        );
-        closeModal();
-      } catch (err) {
-        setError('Failed to update item. Please try again.');
-      }
-    }
-  };
-  
-  const handleDeleteItem = async (id: number) => {
-    try {
-      await deleteItem(id);
-      setItems(prevItems => prevItems.filter(item => item.id !== id));
-    } catch (err) {
-      setError('Failed to delete item. Please try again.');
-    }
-  };
-  
-  const handleEditItem = (item: Item) => {
-    setEditItem(item);
-    setIsModalOpen(true);
-  };
-  
-  const openAddModal = () => {
-    setEditItem(null);
-    setIsModalOpen(true);
-  };
-  
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditItem(null);
-  };
-  
+  const {
+    items,
+    filteredItems,
+    searchTerm,
+    setSearchTerm,
+    editItem,
+    loading,
+    error,
+    isModalOpen,
+    openAddModal,
+    closeModal,
+    handleAddItem,
+    handleUpdateItem,
+    handleDeleteItem,
+    handleEditItem,
+  } = useItems();
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-600 text-white shadow-md">
-        <div className="container mx-auto py-4 px-4">
-          <h1 className="text-2xl font-bold">Item Manager</h1>
-        </div>
-      </header>
-      
-      <main className="container mx-auto py-6 px-4">
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <Header title="Item Manager" />
+
+      <main className="container mx-auto py-6 px-4 flex-grow">
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-            <button 
-              className="ml-4 bg-red-500 text-white px-2 py-1 rounded"
-              onClick={() => setError(null)}
+          <ErrorAlert message={error} onDismiss={() => setSearchTerm("")} />
+        )}
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <h2 className="text-xl font-bold">Item List</h2>
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <SearchBox onSearch={setSearchTerm} />
+            <button
+              onClick={openAddModal}
+              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition flex items-center justify-center"
             >
-              Dismiss
+              <span className="mr-1">+</span> Add New Item
             </button>
           </div>
-        )}
-        
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Item List</h2>
-          <button
-            onClick={openAddModal}
-            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition flex items-center"
-          >
-            <span className="mr-1">+</span> Add New Item
-          </button>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center p-6">Loading items...</div>
+        ) : filteredItems.length === 0 ? (
+          <EmptyState
+            searchTerm={searchTerm}
+            onClearSearch={() => setSearchTerm("")}
+          />
         ) : (
-          <ItemList 
-            items={items}
+          <ItemList
+            items={filteredItems}
             onEdit={handleEditItem}
             onDelete={handleDeleteItem}
           />
         )}
-        
+
         <Modal isOpen={isModalOpen} onClose={closeModal}>
-          <ItemForm 
+          <ItemForm
             initialItem={editItem || undefined}
             onSubmit={editItem ? handleUpdateItem : handleAddItem}
             onCancel={closeModal}
@@ -129,12 +75,8 @@ const App: React.FC = () => {
           />
         </Modal>
       </main>
-      
-      <footer className="bg-gray-200 text-center py-4 mt-auto">
-        <div className="container mx-auto">
-          <p>React TypeScript Item Manager App - {new Date().getFullYear()}</p>
-        </div>
-      </footer>
+
+      <Footer />
     </div>
   );
 };

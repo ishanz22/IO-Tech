@@ -1,4 +1,3 @@
-// src/components/ItemForm.tsx
 'use client'
 import React, { useState, useEffect } from 'react';
 import { Item } from '../services/api';
