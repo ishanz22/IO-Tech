@@ -7,25 +7,26 @@ interface Props {
   onSubmit: (title: string, description: string) => Promise<void>;
   onCancel: () => void;
   isEdit?: boolean;
+  existingItems?: Item[];
 }
 
-const ItemForm: React.FC<Props> = ({ initialItem, onSubmit, onCancel, isEdit = false }) => {
+const ItemForm: React.FC<Props> = ({ 
+  initialItem, 
+  onSubmit, 
+  onCancel, 
+  isEdit = false,
+  existingItems = []
+}) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Debug logging
-  console.log('ItemForm rendered with initialItem:', initialItem);
-  
-  // Use separate useEffect for initialItem changes
   useEffect(() => {
     if (initialItem) {
-      console.log('Setting form values from initialItem:', initialItem);
       setTitle(initialItem.title);
       setDescription(initialItem.description);
     } else {
-      // Reset form when not editing
       setTitle('');
       setDescription('');
     }
@@ -43,12 +44,6 @@ const ItemForm: React.FC<Props> = ({ initialItem, onSubmit, onCancel, isEdit = f
       setSubmitting(true);
       setError(null);
       await onSubmit(title, description);
-      
-      // Only reset form if not editing
-      if (!isEdit) {
-        setTitle('');
-        setDescription('');
-      }
     } catch (err) {
       setError('Failed to save item. Please try again.');
     } finally {
@@ -57,7 +52,7 @@ const ItemForm: React.FC<Props> = ({ initialItem, onSubmit, onCancel, isEdit = f
   };
   
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 border border-gray-200 mb-6">
+    <div>
       <h2 className="text-xl font-bold mb-4">{isEdit ? 'Edit Item' : 'Add New Item'}</h2>
       
       {error && (

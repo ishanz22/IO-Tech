@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Item, createItem, updateItem, fetchItems, deleteItem } from './services/api';
 import ItemList from './components/ItemList';
 import ItemForm from './components/ItemForm';
+import Modal from './components/Modal';
 
 const App: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [editItem, setEditItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   
   const loadItems = async () => {
     try {
@@ -31,6 +33,7 @@ const App: React.FC = () => {
     try {
       const newItem = await createItem({ title, description });
       setItems(prevItems => [...prevItems, newItem]);
+      closeModal();
     } catch (err) {
       setError('Failed to add item. Please try again.');
     }
@@ -39,13 +42,11 @@ const App: React.FC = () => {
   const handleUpdateItem = async (title: string, description: string) => {
     if (editItem) {
       try {
-        console.log('Updating item with:', { title, description }); // Debug log
         const updatedItem = await updateItem({ ...editItem, title, description });
-
         setItems(prevItems =>
           prevItems.map(item => item.id === editItem.id ? updatedItem : item)
         );
-        setEditItem(null); // Reset edit mode
+        closeModal();
       } catch (err) {
         setError('Failed to update item. Please try again.');
       }
@@ -62,11 +63,17 @@ const App: React.FC = () => {
   };
   
   const handleEditItem = (item: Item) => {
-    console.log('Setting edit item:', item); // Debug log
     setEditItem(item);
+    setIsModalOpen(true);
   };
   
-  const handleCancelEdit = () => {
+  const openAddModal = () => {
+    setEditItem(null);
+    setIsModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
     setEditItem(null);
   };
   
@@ -91,15 +98,15 @@ const App: React.FC = () => {
           </div>
         )}
         
-        <ItemForm 
-          initialItem={editItem || undefined}
-          onSubmit={editItem ? handleUpdateItem : handleAddItem}
-          onCancel={handleCancelEdit}
-          isEdit={!!editItem}
-          existingItems={items} // Pass existing items to check duplicates
-        />
-        
-        <h2 className="text-xl font-bold mb-4">Item List</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold">Item List</h2>
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition flex items-center"
+          >
+            <span className="mr-1">+</span> Add New Item
+          </button>
+        </div>
         
         {loading ? (
           <div className="flex justify-center p-6">Loading items...</div>
@@ -110,6 +117,16 @@ const App: React.FC = () => {
             onDelete={handleDeleteItem}
           />
         )}
+        
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+          <ItemForm 
+            initialItem={editItem || undefined}
+            onSubmit={editItem ? handleUpdateItem : handleAddItem}
+            onCancel={closeModal}
+            isEdit={!!editItem}
+            existingItems={items}
+          />
+        </Modal>
       </main>
       
       <footer className="bg-gray-200 text-center py-4 mt-auto">
