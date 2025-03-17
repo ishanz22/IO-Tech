@@ -32,7 +32,8 @@ const App: React.FC = () => {
   const handleAddItem = async (title: string, description: string) => {
     try {
       const newItem = await createItem({ title, description });
-      setItems(prevItems => [...prevItems, newItem]);
+      // Add new item to the top of the list
+      setItems(prevItems => [newItem, ...prevItems]);
       closeModal();
     } catch (err) {
       setError('Failed to add item. Please try again.');

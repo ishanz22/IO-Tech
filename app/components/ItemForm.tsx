@@ -1,3 +1,4 @@
+// src/components/ItemForm.tsx
 'use client'
 import React, { useState, useEffect } from 'react';
 import { Item } from '../services/api';
@@ -32,11 +33,32 @@ const ItemForm: React.FC<Props> = ({
     }
   }, [initialItem]);
   
+  const checkDuplicateTitle = (title: string): boolean => {
+    if (!isEdit) {
+      // For new items, check if title already exists
+      return existingItems.some(item => 
+        item.title.toLowerCase() === title.toLowerCase()
+      );
+    } else {
+      // For editing, check if title exists on any item OTHER than the current one
+      return existingItems.some(item => 
+        item.title.toLowerCase() === title.toLowerCase() && 
+        item.id !== initialItem?.id
+      );
+    }
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim() || !description.trim()) {
       setError('Title and description are required');
+      return;
+    }
+    
+    // Check for duplicate title
+    if (checkDuplicateTitle(title.trim())) {
+      setError('This title already exists. Please use a different title.');
       return;
     }
     
@@ -70,7 +92,11 @@ const ItemForm: React.FC<Props> = ({
             type="text"
             id="title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              // Clear error when user starts typing again
+              if (error) setError(null);
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter title"
             disabled={submitting}
@@ -84,7 +110,11 @@ const ItemForm: React.FC<Props> = ({
           <textarea
             id="description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              // Clear error when user starts typing again
+              if (error) setError(null);
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
             placeholder="Enter description"
             disabled={submitting}

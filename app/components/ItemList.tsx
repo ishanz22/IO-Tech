@@ -16,16 +16,18 @@ const ItemList: React.FC<Props> = ({ items, onEdit, onDelete }) => {
   
   return (
     <div className="space-y-4">
-      {items.map(item => (
+      {items.map((item, index) => (
         <ItemCard 
           key={item.id} 
           item={item} 
+          index={index} 
           onDelete={onDelete} 
           onEdit={onEdit} 
         />
       ))}
     </div>
   );
+  
 };
 
 export default ItemList;

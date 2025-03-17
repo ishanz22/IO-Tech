@@ -3,6 +3,7 @@ import { Item } from '../services/api';
 
 interface Props {
   item: Item;
+  index?: number;
   onDelete: (id: number) => void;
   onEdit: (item: Item) => void;
 }

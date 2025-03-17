@@ -9,7 +9,7 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
-  // Close modal on escape key press
+  // Close Modal on escape key press
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -26,7 +26,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
     };
   }, [isOpen, onClose]);
   
-  // Prevent scrolling on the body when modal is open
+  // Prevent scrolling on the body when Modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
